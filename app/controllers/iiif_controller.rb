@@ -241,7 +241,8 @@ class IiifController < ApplicationController
     if params[:type]=="transcription"
       seed = {
                 '@id' => url_for({:controller => 'iiif', :id => work_id, :action => 'layer', :type => params[:type], :only_path => false}),
-                'label' => params[:type] + " layer"
+                'label' => params[:type] + " layer",
+                'on' => url_for({:controller => 'iiif', :action => 'manifest', :id => work.id, :only_path => false})
               }
       layer = IIIF::Presentation::Layer.new(seed)
       layer["otherContent"]=[]
@@ -633,18 +634,21 @@ private
       annotation_list = IIIF::Presentation::AnnotationList.new
       annotation_list['@id'] = url_for({:controller => 'iiif', :action => 'list', :page_id => page.id, :annotation_type => type, :only_path => false})
       annotation_list['label'] = "Transcription"
+      annotation_list['on'] = canvas_id_from_page(page)
     end
   when 'translation'
     unless page.source_translation.blank?
       annotation_list = IIIF::Presentation::AnnotationList.new
       annotation_list['@id'] = url_for({:controller => 'iiif', :action => 'list', :page_id => page.id, :annotation_type => type, :only_path => false})
       annotation_list['label'] = "Translation"
+      annotation_list['on'] = canvas_id_from_page(page)
     end
   when 'notes'
     unless page.notes.blank?   #no comments
       annotation_list = IIIF::Presentation::AnnotationList.new
       annotation_list['@id'] = url_for({:controller => 'iiif', :action => 'list', :page_id => page.id, :annotation_type => type, :only_path => false})
       annotation_list['label'] = "Notes"
+      annotation_list['on'] = canvas_id_from_page(page)
     end
   end
     annotation_list
