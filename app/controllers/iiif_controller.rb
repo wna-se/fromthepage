@@ -27,7 +27,6 @@ class IiifController < ApplicationController
     domain = params[:domain]
     raw_terminus_a_quo = params[:terminus_a_quo]
     raw_terminus_ad_quem = params[:terminus_ad_quem]
-    
     terminus_a_quo = nil
     terminus_ad_quem = nil
     # error processing -- return 400 Bad Request with explanatory text in HTML or JSON within a respond_to
@@ -90,8 +89,11 @@ class IiifController < ApplicationController
     end
 
     domain_collection = IIIF::Presentation::Collection.new
-    domain_collection['@id'] = url_for({:controller => 'iiif', :action => 'for', :id => domain, :only_path => false})
+    domain_collection['@id'] = url_for({:controller => 'iiif', :action => 'contributions', :domain => domain, :only_path => false})
     domain_collection.label = "IIIF resources avaliable on the FromThePage installation at #{Rails.application.config.action_mailer.default_url_options[:host]} which were derived from resources matching *#{domain}*"
+    domain_collection.label << " and were modified since #{terminus_a_quo}" if terminus_a_quo
+    domain_collection.label << " but before #{terminus_ad_quem}" if terminus_ad_quem
+    
       
     works.each do |work|
       seed = { 
@@ -395,8 +397,14 @@ private
         "profile" => "https://github.com/benwbrum/fromthepage/wiki/FromThePage-Support-for-the-IIIF-Presentation-API-and-Web-Annotations#verbatim-plaintext", 
         "@id" => collection_work_export_plaintext_verbatim_path(work.collection.owner, work.collection, work, :only_path => false) 
       },
-      { "@id" => url_for(:controller => :export, :action => :show, :work_id => work.id), "label" => "XHTML Export", "profile" => "XHTML URL"},     
-      { "@id" => url_for(:controller => :export, :action => :tei, :work_id => work.id), "label" => "TEI Export", "profile" => "tei URL"}
+      { "@id" => url_for(:controller => :export, :action => :show, :work_id => work.id), 
+        "label" => "XHTML Export", 
+        "format" => "text/html", 
+        "profile" => "https://github.com/benwbrum/fromthepage/wiki/FromThePage-Support-for-the-IIIF-Presentation-API-and-Web-Annotations#xhtml"},     
+      { "@id" => url_for(:controller => :export, :action => :tei, :work_id => work.id), 
+        "label" => "TEI Export", 
+        "format" => "application/xml+tei", 
+        "profile" => "https://github.com/benwbrum/fromthepage/wiki/FromThePage-Support-for-the-IIIF-Presentation-API-and-Web-Annotations#tei-xml"}
     ]
     pages = work.pages
     pages.each do |page|
