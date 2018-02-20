@@ -51,6 +51,36 @@ class ExportController < ApplicationController
     @other_articles = @all_articles.joins(:categories).where.not(categories: {title: 'People'})
                       .where.not(categories: {title: 'Places'})
     render :layout => false, :content_type => "application/xml", :template => "export/tei.html.erb"
+
+
+
+#for collection of works
+#create a zip file which is automatically downloaded to the user's machine
+    respond_to do |format|
+      format.html
+      format.zip do
+      compressed_filestream = Zip::OutputStream.write_buffer do |zos|
+        @works.each do |work|
+          @work = work
+          export_view = render_to_string(:action => 'show', :formats => [:html], :work_id => work.id, :layout => false, :encoding => 'utf-8')
+          zos.put_next_entry "#{work.slug.truncate(200, omission: "")}.xhtml"
+          zos.print export_view
+        end
+      end
+      compressed_filestream.rewind
+      send_data compressed_filestream.read, filename: "#{@collection.title}.zip"
+      end
+    end
+    cookies['download_finished'] = 'true'
+
+
+
+
+
+
+
+
+
   end
 
   def subject_csv
