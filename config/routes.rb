@@ -141,4 +141,6 @@ Fromthepage::Application.routes.draw do
   get 'static/about', to: 'static#about', as: :about
   get 'static/privacy', to: 'static#privacy', as: :privacy
 
+  get '/content' => redirect("http://localhost:3000/content/")
+
 end
