@@ -43,6 +43,12 @@ module Fromthepage
     if config.respond_to?(:sass)
       require File.expand_path('../../lib/sass_functions.rb', __FILE__)
     end
+
+   config.middleware.insert(0, Rack::ReverseProxy) do
+      reverse_proxy_options preserve_host: true
+      reverse_proxy '/content', 'http://fromthepage.wpengine.com/'
+   end
+
   end
 end
 
